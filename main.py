@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-from datetime import datetime
+from datetime import datetime, timedelta
 
 # Custom CSS for modern UI
 def inject_custom_css():
@@ -106,15 +106,17 @@ def load_crop_data():
         "Crop": ["Wheat", "Rice", "Corn"],
         "Yield (tons)": [10, 15, 20],
         "Soil Health": ["Good", "Average", "Excellent"],
+        "Region": ["North", "South", "East"],
+        "Date": [datetime.now() - timedelta(days=2), datetime.now() - timedelta(days=1), datetime.now()],
     })
 
 def load_market_data():
     return pd.DataFrame({
+        "Product ID": [1, 2, 3],
         "Crop": ["Wheat", "Rice", "Corn"],
         "Price ($)": [200, 300, 250],
-        "Demand": ["High", "Medium", "Low"],
-        "Seller": ["Farmer A", "Farmer B", "Farmer C"],
         "Quantity Available (tons)": [50, 30, 40],
+        "Seller": ["Farmer A", "Farmer B", "Farmer C"],
     })
 
 def load_user_data():
@@ -123,17 +125,6 @@ def load_user_data():
         "Name": ["John Doe", "Jane Smith", "Alice Johnson"],
         "Role": ["Admin", "Farmer", "User"],
         "Status": ["Active", "Pending", "Active"],
-    })
-
-def load_transaction_data():
-    return pd.DataFrame({
-        "Transaction ID": [101, 102, 103],
-        "Buyer": ["Buyer A", "Buyer B", "Buyer C"],
-        "Seller": ["Farmer X", "Farmer Y", "Farmer Z"],
-        "Crop": ["Wheat", "Rice", "Corn"],
-        "Quantity (tons)": [5, 10, 15],
-        "Price ($)": [1000, 3000, 3750],
-        "Status": ["Completed", "Pending", "Completed"],
     })
 
 # Dummy credentials for testing
@@ -149,7 +140,7 @@ def authenticate_user(username, password):
         return DUMMY_CREDENTIALS[username]["role"]
     return None
 
-# Initialize session state for profile and tickets
+# Initialize session state for profile, tickets, and market data
 if "profile" not in st.session_state:
     st.session_state["profile"] = {
         "name": "",
@@ -160,6 +151,12 @@ if "profile" not in st.session_state:
 
 if "tickets" not in st.session_state:
     st.session_state["tickets"] = []
+
+if "market_data" not in st.session_state:
+    st.session_state["market_data"] = load_market_data()
+
+if "alerts" not in st.session_state:
+    st.session_state["alerts"] = []
 
 # Main app
 def main():
@@ -274,23 +271,86 @@ def admin_dashboard():
     elif tab == "Crop Monitoring":
         st.header("Crop Monitoring")
         crop_data = load_crop_data()
-        st.write("Crop Health Data:")
-        st.write(crop_data)
+
+        # Filters
+        st.subheader("Filters")
+        region_filter = st.selectbox("Select Region", ["All"] + list(crop_data["Region"].unique()))
+        crop_filter = st.selectbox("Select Crop", ["All"] + list(crop_data["Crop"].unique()))
+
+        # Apply filters
+        filtered_data = crop_data
+        if region_filter != "All":
+            filtered_data = filtered_data[filtered_data["Region"] == region_filter]
+        if crop_filter != "All":
+            filtered_data = filtered_data[filtered_data["Crop"] == crop_filter]
+
+        st.write("Filtered Crop Data:")
+        st.write(filtered_data)
+
+        # Visualize crop yield
+        fig1 = px.bar(filtered_data, x="Crop", y="Yield (tons)", title="Crop Yield (tons)", color="Crop")
+        st.plotly_chart(fig1)
 
         # Visualize soil health
-        fig = px.pie(crop_data, names="Crop", values="Yield (tons)", title="Crop Distribution", color="Crop")
-        st.plotly_chart(fig)
+        fig2 = px.pie(filtered_data, names="Soil Health", title="Soil Health Distribution", color="Soil Health")
+        st.plotly_chart(fig2)
 
     elif tab == "Market Management":
         st.header("Market Management")
-        market_data = load_market_data()
+        market_data = st.session_state["market_data"]
+
+        # Add/Edit/Delete Products
+        with st.expander("Add/Edit/Delete Products"):
+            product_id = st.number_input("Product ID", min_value=1)
+            crop = st.text_input("Crop")
+            price = st.number_input("Price ($)", min_value=1)
+            quantity = st.number_input("Quantity Available (tons)", min_value=1)
+            seller = st.text_input("Seller")
+
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                if st.button("Add Product"):
+                    new_product = {
+                        "Product ID": product_id,
+                        "Crop": crop,
+                        "Price ($)": price,
+                        "Quantity Available (tons)": quantity,
+                        "Seller": seller,
+                    }
+                    st.session_state["market_data"] = st.session_state["market_data"].append(new_product, ignore_index=True)
+                    st.success("Product added successfully!")
+            with col2:
+                if st.button("Update Product"):
+                    st.session_state["market_data"].loc[st.session_state["market_data"]["Product ID"] == product_id, ["Crop", "Price ($)", "Quantity Available (tons)", "Seller"]] = [crop, price, quantity, seller]
+                    st.success("Product updated successfully!")
+            with col3:
+                if st.button("Delete Product"):
+                    st.session_state["market_data"] = st.session_state["market_data"][st.session_state["market_data"]["Product ID"] != product_id]
+                    st.success("Product deleted successfully!")
+
         st.write("Marketplace Listings:")
-        st.write(market_data)
+        st.write(st.session_state["market_data"])
 
     elif tab == "Alerts":
         st.header("Alerts")
-        st.write("Weather Updates: Sunny")
-        st.write("Pest Outbreak Alerts: None")
+
+        # Send Alerts
+        with st.expander("Send Alerts"):
+            alert_message = st.text_area("Alert Message")
+            if st.button("Send Alert"):
+                st.session_state["alerts"].append({
+                    "message": alert_message,
+                    "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                })
+                st.success("Alert sent successfully!")
+
+        # View Alerts
+        st.subheader("Recent Alerts")
+        if st.session_state["alerts"]:
+            for alert in st.session_state["alerts"]:
+                st.write(f"**{alert['timestamp']}**: {alert['message']}")
+        else:
+            st.write("No alerts found.")
 
 # User Dashboard
 def user_dashboard():
@@ -302,7 +362,7 @@ def user_dashboard():
 
     if tab == "Marketplace":
         st.header("Marketplace")
-        market_data = load_market_data()
+        market_data = st.session_state["market_data"]
 
         # Display purchase cards
         for index, row in market_data.iterrows():
@@ -314,7 +374,6 @@ def user_dashboard():
                         <p><strong>Price:</strong> ${row['Price ($)']} per ton</p>
                         <p><strong>Seller:</strong> {row['Seller']}</p>
                         <p><strong>Quantity Available:</strong> {row['Quantity Available (tons)']} tons</p>
-                        <p><strong>Demand:</strong> {row['Demand']}</p>
                     </div>
                     """,
                     unsafe_allow_html=True,
