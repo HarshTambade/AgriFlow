@@ -89,6 +89,20 @@ def inject_custom_css():
         .card p {
             margin: 5px 0;
         }
+
+        /* White theme */
+        body {
+            background-color: #FFFFFF;
+        }
+        .stApp {
+            background-color: #FFFFFF;
+        }
+        .stHeader {
+            color: #2E86C1;
+        }
+        .stSubheader {
+            color: #28B463;
+        }
         </style>
         """,
         unsafe_allow_html=True,
