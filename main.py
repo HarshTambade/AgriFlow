@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+from datetime import datetime
 
 # Custom CSS for better UI
 def inject_custom_css():
@@ -153,117 +154,151 @@ def main():
 def super_admin_dashboard():
     st.title("Super Admin Dashboard")
 
-    # Platform Performance
-    st.header("Platform Performance")
-    st.write("Total Users: 1000")
-    st.write("Revenue: $1,000,000")
+    # Sidebar navigation
+    st.sidebar.header("Navigation")
+    tab = st.sidebar.radio("Go to", ["Dashboard", "User Management", "Data Analytics", "System Settings"])
 
-    # User Management
-    st.header("User Management")
-    user_data = load_user_data()
-    st.write("User Data:")
-    st.write(user_data)
+    if tab == "Dashboard":
+        st.header("Platform Performance")
+        st.write("Total Users: 1000")
+        st.write("Revenue: $1,000,000")
 
-    # Add/Edit User
-    with st.expander("Add/Edit User"):
-        user_id = st.number_input("User ID", min_value=1)
-        name = st.text_input("Name")
-        user_role = st.selectbox("Role", ["Admin", "Farmer", "User"])
-        status = st.selectbox("Status", ["Active", "Pending"])
-        if st.button("Save User"):
-            st.success(f"User {name} saved successfully!")
+    elif tab == "User Management":
+        st.header("User Management")
+        user_data = load_user_data()
+        st.write("User Data:")
+        st.write(user_data)
 
-    # Data Analytics
-    st.header("Data Analytics")
-    crop_data = load_crop_data()
-    st.write("Crop Data:")
-    st.write(crop_data)
+        # Add/Edit User
+        with st.expander("Add/Edit User"):
+            user_id = st.number_input("User ID", min_value=1)
+            name = st.text_input("Name")
+            user_role = st.selectbox("Role", ["Admin", "Farmer", "User"])
+            status = st.selectbox("Status", ["Active", "Pending"])
+            if st.button("Save User"):
+                st.success(f"User {name} saved successfully!")
 
-    # Visualize crop yield
-    fig = px.bar(crop_data, x="Crop", y="Yield (tons)", title="Crop Yield (tons)")
-    st.plotly_chart(fig)
+    elif tab == "Data Analytics":
+        st.header("Data Analytics")
+        crop_data = load_crop_data()
+        st.write("Crop Data:")
+        st.write(crop_data)
 
-    # System Settings
-    st.header("System Settings")
-    st.write("Manage platform configurations and permissions.")
+        # Visualize crop yield
+        fig = px.bar(crop_data, x="Crop", y="Yield (tons)", title="Crop Yield (tons)")
+        st.plotly_chart(fig)
+
+    elif tab == "System Settings":
+        st.header("System Settings")
+        st.write("Manage platform configurations and permissions.")
 
 # Admin Dashboard
 def admin_dashboard():
     st.title("Admin Dashboard")
 
-    # Farmer Management
-    st.header("Farmer Management")
-    user_data = load_user_data()
-    farmers = user_data[user_data["Role"] == "Farmer"]
-    st.write("Registered Farmers:")
-    st.write(farmers)
+    # Sidebar navigation
+    st.sidebar.header("Navigation")
+    tab = st.sidebar.radio("Go to", ["Dashboard", "Farmer Management", "Crop Monitoring", "Market Management"])
 
-    # Approve/Reject Farmers
-    with st.expander("Approve/Reject Farmers"):
-        farmer_id = st.number_input("Farmer ID", min_value=1)
-        action = st.selectbox("Action", ["Approve", "Reject"])
-        if st.button("Submit"):
-            st.success(f"Farmer {farmer_id} {action.lower()}ed.")
+    if tab == "Dashboard":
+        st.header("Admin Insights")
+        st.write("Local Area Data:")
+        st.write("User Activity: High")
 
-    # Crop Monitoring
-    st.header("Crop Monitoring")
-    crop_data = load_crop_data()
-    st.write("Crop Health Data:")
-    st.write(crop_data)
+    elif tab == "Farmer Management":
+        st.header("Farmer Management")
+        user_data = load_user_data()
+        farmers = user_data[user_data["Role"] == "Farmer"]
+        st.write("Registered Farmers:")
+        st.write(farmers)
 
-    # Visualize soil health
-    fig = px.pie(crop_data, names="Crop", values="Yield (tons)", title="Crop Distribution")
-    st.plotly_chart(fig)
+        # Approve/Reject Farmers
+        with st.expander("Approve/Reject Farmers"):
+            farmer_id = st.number_input("Farmer ID", min_value=1)
+            action = st.selectbox("Action", ["Approve", "Reject"])
+            if st.button("Submit"):
+                st.success(f"Farmer {farmer_id} {action.lower()}ed.")
 
-    # Market Management
-    st.header("Market Management")
-    market_data = load_market_data()
-    st.write("Marketplace Listings:")
-    st.write(market_data)
+    elif tab == "Crop Monitoring":
+        st.header("Crop Monitoring")
+        crop_data = load_crop_data()
+        st.write("Crop Health Data:")
+        st.write(crop_data)
+
+        # Visualize soil health
+        fig = px.pie(crop_data, names="Crop", values="Yield (tons)", title="Crop Distribution")
+        st.plotly_chart(fig)
+
+    elif tab == "Market Management":
+        st.header("Market Management")
+        market_data = load_market_data()
+        st.write("Marketplace Listings:")
+        st.write(market_data)
 
 # User Dashboard
 def user_dashboard():
     st.title("User Dashboard")
 
-    # Marketplace
-    st.header("Marketplace")
-    market_data = load_market_data()
-    st.write("Available Crops:")
-    st.write(market_data)
+    # Sidebar navigation
+    st.sidebar.header("Navigation")
+    tab = st.sidebar.radio("Go to", ["Marketplace", "Profile Management", "Support"])
 
-    # Visualize market demand
-    fig = px.bar(market_data, x="Crop", y="Price ($)", color="Demand", title="Crop Prices and Demand")
-    st.plotly_chart(fig)
+    if tab == "Marketplace":
+        st.header("Marketplace")
+        market_data = load_market_data()
+        st.write("Available Crops:")
+        st.write(market_data)
 
-    # Profile Management
-    st.header("Profile Management")
-    st.write("Update your personal details and track orders.")
+        # Visualize market demand
+        fig = px.bar(market_data, x="Crop", y="Price ($)", color="Demand", title="Crop Prices and Demand")
+        st.plotly_chart(fig)
+
+    elif tab == "Profile Management":
+        st.header("Profile Management")
+        st.write("Update your personal details and track orders.")
+
+    elif tab == "Support":
+        st.header("Support")
+        st.write("Access FAQs and raise support tickets.")
 
 # Farmer Dashboard
 def farmer_dashboard():
     st.title("Farmer Dashboard")
 
-    # Crop Management
-    st.header("Crop Management")
-    crop_data = load_crop_data()
-    st.write("Your Crop Data:")
-    st.write(crop_data)
+    # Sidebar navigation
+    st.sidebar.header("Navigation")
+    tab = st.sidebar.radio("Go to", ["Dashboard", "Crop Management", "Marketplace", "Alerts"])
 
-    # Visualize crop yield
-    fig = px.bar(crop_data, x="Crop", y="Yield (tons)", title="Your Crop Yield (tons)")
-    st.plotly_chart(fig)
+    if tab == "Dashboard":
+        st.header("Crop Overview")
+        crop_data = load_crop_data()
+        st.write("Your Crop Data:")
+        st.write(crop_data)
 
-    # Marketplace Integration
-    st.header("Marketplace")
-    st.write("List your crops for sale and manage transactions.")
+        # Visualize crop yield
+        fig = px.bar(crop_data, x="Crop", y="Yield (tons)", title="Your Crop Yield (tons)")
+        st.plotly_chart(fig)
 
-    # Sample form to list crops
-    with st.form("List Crop"):
-        crop_name = st.text_input("Crop Name")
-        quantity = st.number_input("Quantity (tons)", min_value=1)
-        price = st.number_input("Price ($)", min_value=1)
-        if st.form_submit_button("List Crop"):
-            st.success(f"Listed {quantity} tons of {crop_name} at ${price}/ton")
+    elif tab == "Crop Management":
+        st.header("Crop Management")
+        st.write("Record and monitor your crops here.")
+
+    elif tab == "Marketplace":
+        st.header("Marketplace")
+        st.write("List your crops for sale and manage transactions.")
+
+        # Sample form to list crops
+        with st.form("List Crop"):
+            crop_name = st.text_input("Crop Name")
+            quantity = st.number_input("Quantity (tons)", min_value=1)
+            price = st.number_input("Price ($)", min_value=1)
+            if st.form_submit_button("List Crop"):
+                st.success(f"Listed {quantity} tons of {crop_name} at ${price}/ton")
+
+    elif tab == "Alerts":
+        st.header("Alerts")
+        st.write("Weather Updates: Sunny")
+        st.write("Pest Outbreak Alerts: None")
 
 # Run the app
 if __name__ == "__main__":
