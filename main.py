@@ -149,6 +149,18 @@ def authenticate_user(username, password):
         return DUMMY_CREDENTIALS[username]["role"]
     return None
 
+# Initialize session state for profile and tickets
+if "profile" not in st.session_state:
+    st.session_state["profile"] = {
+        "name": "",
+        "email": "",
+        "phone": "",
+        "address": "",
+    }
+
+if "tickets" not in st.session_state:
+    st.session_state["tickets"] = []
+
 # Main app
 def main():
     st.title("AgriFlow: Comprehensive Agricultural Management Platform")
@@ -315,11 +327,53 @@ def user_dashboard():
 
     elif tab == "Profile Management":
         st.header("Profile Management")
-        st.write("Update your personal details and track orders.")
+
+        # Profile form
+        with st.form("Profile Form"):
+            st.write("Update your profile details:")
+            name = st.text_input("Name", value=st.session_state["profile"]["name"])
+            email = st.text_input("Email", value=st.session_state["profile"]["email"])
+            phone = st.text_input("Phone", value=st.session_state["profile"]["phone"])
+            address = st.text_input("Address", value=st.session_state["profile"]["address"])
+
+            if st.form_submit_button("Save Profile"):
+                st.session_state["profile"] = {
+                    "name": name,
+                    "email": email,
+                    "phone": phone,
+                    "address": address,
+                }
+                st.success("Profile updated successfully!")
 
     elif tab == "Support":
         st.header("Support")
-        st.write("Access FAQs and raise support tickets.")
+
+        # Support ticketing panel
+        with st.expander("Raise a Support Ticket"):
+            ticket_title = st.text_input("Title")
+            ticket_description = st.text_area("Description")
+            if st.button("Submit Ticket"):
+                ticket_id = len(st.session_state["tickets"]) + 1
+                st.session_state["tickets"].append({
+                    "id": ticket_id,
+                    "title": ticket_title,
+                    "description": ticket_description,
+                    "status": "Open",
+                    "date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                })
+                st.success(f"Ticket #{ticket_id} submitted successfully!")
+
+        # View tickets
+        st.subheader("Your Support Tickets")
+        if st.session_state["tickets"]:
+            for ticket in st.session_state["tickets"]:
+                st.write(f"**Ticket #{ticket['id']}**: {ticket['title']}")
+                st.write(f"**Status**: {ticket['status']}")
+                st.write(f"**Date**: {ticket['date']}")
+                st.write(f"**Description**: {ticket['description']}")
+                st.write("---")
+        else:
+            st.write("No tickets found.")
 
 # Farmer Dashboard
 def farmer_dashboard():
