@@ -140,7 +140,7 @@ def authenticate_user(username, password):
         return DUMMY_CREDENTIALS[username]["role"]
     return None
 
-# Initialize session state for profile, tickets, and market data
+# Initialize session state for profile, tickets, market data, and crops
 if "profile" not in st.session_state:
     st.session_state["profile"] = {
         "name": "",
@@ -154,6 +154,9 @@ if "tickets" not in st.session_state:
 
 if "market_data" not in st.session_state:
     st.session_state["market_data"] = load_market_data()
+
+if "crop_data" not in st.session_state:
+    st.session_state["crop_data"] = load_crop_data()
 
 if "alerts" not in st.session_state:
     st.session_state["alerts"] = []
@@ -444,17 +447,51 @@ def farmer_dashboard():
 
     if tab == "Dashboard":
         st.header("Crop Overview")
-        crop_data = load_crop_data()
+        crop_data = st.session_state["crop_data"]
         st.write("Your Crop Data:")
         st.write(crop_data)
 
         # Visualize crop yield
-        fig = px.bar(crop_data, x="Crop", y="Yield (tons)", title="Your Crop Yield (tons)", color="Crop")
-        st.plotly_chart(fig)
+        fig1 = px.bar(crop_data, x="Crop", y="Yield (tons)", title="Crop Yield (tons)", color="Crop")
+        st.plotly_chart(fig1)
+
+        # Visualize soil health
+        fig2 = px.pie(crop_data, names="Soil Health", title="Soil Health Distribution", color="Soil Health")
+        st.plotly_chart(fig2)
 
     elif tab == "Crop Management":
         st.header("Crop Management")
-        st.write("Record and monitor your crops here.")
+
+        # Add/Edit/Delete Crops
+        with st.expander("Add/Edit/Delete Crops"):
+            crop_name = st.text_input("Crop Name")
+            yield_tons = st.number_input("Yield (tons)", min_value=1)
+            soil_health = st.selectbox("Soil Health", ["Good", "Average", "Excellent"])
+            region = st.text_input("Region")
+
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                if st.button("Add Crop"):
+                    new_crop = {
+                        "Crop": crop_name,
+                        "Yield (tons)": yield_tons,
+                        "Soil Health": soil_health,
+                        "Region": region,
+                        "Date": datetime.now().strftime("%Y-%m-%d"),
+                    }
+                    st.session_state["crop_data"] = st.session_state["crop_data"].append(new_crop, ignore_index=True)
+                    st.success("Crop added successfully!")
+            with col2:
+                if st.button("Update Crop"):
+                    st.session_state["crop_data"].loc[st.session_state["crop_data"]["Crop"] == crop_name, ["Yield (tons)", "Soil Health", "Region"]] = [yield_tons, soil_health, region]
+                    st.success("Crop updated successfully!")
+            with col3:
+                if st.button("Delete Crop"):
+                    st.session_state["crop_data"] = st.session_state["crop_data"][st.session_state["crop_data"]["Crop"] != crop_name]
+                    st.success("Crop deleted successfully!")
+
+        st.write("Your Crop Data:")
+        st.write(st.session_state["crop_data"])
 
     elif tab == "Marketplace":
         st.header("Marketplace")
@@ -475,8 +512,18 @@ def farmer_dashboard():
 
     elif tab == "Training":
         st.header("Training and Support")
-        st.write("Access tutorials on modern farming techniques.")
-        st.write("Join farmer communities for shared knowledge.")
+
+        # Knowledge Resources
+        st.subheader("Knowledge Resources")
+        st.write("1. [Modern Farming Techniques](https://www.youtube.com/watch?v=example1)")
+        st.write("2. [Soil Health Management](https://www.youtube.com/watch?v=example2)")
+        st.write("3. [Crop Rotation Strategies](https://www.youtube.com/watch?v=example3)")
+
+        # YouTube Videos
+        st.subheader("YouTube Videos")
+        st.write("Watch these videos to learn more about modern farming:")
+        st.video("https://www.youtube.com/watch?v=example1")
+        st.video("https://www.youtube.com/watch?v=example2")
 
 # Run the app
 if __name__ == "__main__":
