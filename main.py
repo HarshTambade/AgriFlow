@@ -3,7 +3,7 @@ import pandas as pd
 import plotly.express as px
 from datetime import datetime
 
-# Custom CSS for better UI
+# Custom CSS for modern UI
 def inject_custom_css():
     st.markdown(
         """
@@ -18,9 +18,10 @@ def inject_custom_css():
 
         /* Sidebar */
         .css-1d391kg {
-            background-color: #F4F6F6;
+            background-color: #FFFFFF;
             padding: 20px;
             border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
 
         /* Buttons */
@@ -105,6 +106,17 @@ def load_user_data():
         "Status": ["Active", "Pending", "Active"],
     })
 
+def load_transaction_data():
+    return pd.DataFrame({
+        "Transaction ID": [101, 102, 103],
+        "Buyer": ["Buyer A", "Buyer B", "Buyer C"],
+        "Seller": ["Farmer X", "Farmer Y", "Farmer Z"],
+        "Crop": ["Wheat", "Rice", "Corn"],
+        "Quantity (tons)": [5, 10, 15],
+        "Price ($)": [1000, 3000, 3750],
+        "Status": ["Completed", "Pending", "Completed"],
+    })
+
 # Dummy credentials for testing
 DUMMY_CREDENTIALS = {
     "superadmin": {"password": "super123", "role": "Super Admin"},
@@ -156,12 +168,17 @@ def super_admin_dashboard():
 
     # Sidebar navigation
     st.sidebar.header("Navigation")
-    tab = st.sidebar.radio("Go to", ["Dashboard", "User Management", "Data Analytics", "System Settings"])
+    tab = st.sidebar.radio("Go to", ["Dashboard", "User Management", "Data Analytics", "System Settings", "Support"])
 
     if tab == "Dashboard":
         st.header("Platform Performance")
         st.write("Total Users: 1000")
         st.write("Revenue: $1,000,000")
+
+        # Notifications
+        st.subheader("System Notifications")
+        st.write("1. New user registered: Farmer Z")
+        st.write("2. Revenue increased by 10% this month.")
 
     elif tab == "User Management":
         st.header("User Management")
@@ -185,12 +202,16 @@ def super_admin_dashboard():
         st.write(crop_data)
 
         # Visualize crop yield
-        fig = px.bar(crop_data, x="Crop", y="Yield (tons)", title="Crop Yield (tons)")
+        fig = px.bar(crop_data, x="Crop", y="Yield (tons)", title="Crop Yield (tons)", color="Crop")
         st.plotly_chart(fig)
 
     elif tab == "System Settings":
         st.header("System Settings")
         st.write("Manage platform configurations and permissions.")
+
+    elif tab == "Support":
+        st.header("Support")
+        st.write("Manage support tickets and user feedback.")
 
 # Admin Dashboard
 def admin_dashboard():
@@ -198,7 +219,7 @@ def admin_dashboard():
 
     # Sidebar navigation
     st.sidebar.header("Navigation")
-    tab = st.sidebar.radio("Go to", ["Dashboard", "Farmer Management", "Crop Monitoring", "Market Management"])
+    tab = st.sidebar.radio("Go to", ["Dashboard", "Farmer Management", "Crop Monitoring", "Market Management", "Alerts"])
 
     if tab == "Dashboard":
         st.header("Admin Insights")
@@ -226,7 +247,7 @@ def admin_dashboard():
         st.write(crop_data)
 
         # Visualize soil health
-        fig = px.pie(crop_data, names="Crop", values="Yield (tons)", title="Crop Distribution")
+        fig = px.pie(crop_data, names="Crop", values="Yield (tons)", title="Crop Distribution", color="Crop")
         st.plotly_chart(fig)
 
     elif tab == "Market Management":
@@ -234,6 +255,11 @@ def admin_dashboard():
         market_data = load_market_data()
         st.write("Marketplace Listings:")
         st.write(market_data)
+
+    elif tab == "Alerts":
+        st.header("Alerts")
+        st.write("Weather Updates: Sunny")
+        st.write("Pest Outbreak Alerts: None")
 
 # User Dashboard
 def user_dashboard():
@@ -267,7 +293,7 @@ def farmer_dashboard():
 
     # Sidebar navigation
     st.sidebar.header("Navigation")
-    tab = st.sidebar.radio("Go to", ["Dashboard", "Crop Management", "Marketplace", "Alerts"])
+    tab = st.sidebar.radio("Go to", ["Dashboard", "Crop Management", "Marketplace", "Alerts", "Training"])
 
     if tab == "Dashboard":
         st.header("Crop Overview")
@@ -276,7 +302,7 @@ def farmer_dashboard():
         st.write(crop_data)
 
         # Visualize crop yield
-        fig = px.bar(crop_data, x="Crop", y="Yield (tons)", title="Your Crop Yield (tons)")
+        fig = px.bar(crop_data, x="Crop", y="Yield (tons)", title="Your Crop Yield (tons)", color="Crop")
         st.plotly_chart(fig)
 
     elif tab == "Crop Management":
@@ -299,6 +325,11 @@ def farmer_dashboard():
         st.header("Alerts")
         st.write("Weather Updates: Sunny")
         st.write("Pest Outbreak Alerts: None")
+
+    elif tab == "Training":
+        st.header("Training and Support")
+        st.write("Access tutorials on modern farming techniques.")
+        st.write("Join farmer communities for shared knowledge.")
 
 # Run the app
 if __name__ == "__main__":
