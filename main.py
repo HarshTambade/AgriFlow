@@ -72,6 +72,23 @@ def inject_custom_css():
             color: #7F8C8D;
             font-size: 0.9rem;
         }
+
+        /* Purchase Cards */
+        .card {
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            background-color: #fff;
+        }
+        .card h3 {
+            color: #2E86C1;
+            margin-top: 0;
+        }
+        .card p {
+            margin: 5px 0;
+        }
         </style>
         """,
         unsafe_allow_html=True,
@@ -96,6 +113,8 @@ def load_market_data():
         "Crop": ["Wheat", "Rice", "Corn"],
         "Price ($)": [200, 300, 250],
         "Demand": ["High", "Medium", "Low"],
+        "Seller": ["Farmer A", "Farmer B", "Farmer C"],
+        "Quantity Available (tons)": [50, 30, 40],
     })
 
 def load_user_data():
@@ -272,12 +291,27 @@ def user_dashboard():
     if tab == "Marketplace":
         st.header("Marketplace")
         market_data = load_market_data()
-        st.write("Available Crops:")
-        st.write(market_data)
 
-        # Visualize market demand
-        fig = px.bar(market_data, x="Crop", y="Price ($)", color="Demand", title="Crop Prices and Demand")
-        st.plotly_chart(fig)
+        # Display purchase cards
+        for index, row in market_data.iterrows():
+            with st.container():
+                st.markdown(
+                    f"""
+                    <div class="card">
+                        <h3>{row['Crop']}</h3>
+                        <p><strong>Price:</strong> ${row['Price ($)']} per ton</p>
+                        <p><strong>Seller:</strong> {row['Seller']}</p>
+                        <p><strong>Quantity Available:</strong> {row['Quantity Available (tons)']} tons</p>
+                        <p><strong>Demand:</strong> {row['Demand']}</p>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+
+                # Buy button
+                quantity = st.number_input(f"Quantity (tons) for {row['Crop']}", min_value=1, max_value=row['Quantity Available (tons)'], key=f"qty_{index}")
+                if st.button(f"Buy {row['Crop']}", key=f"buy_{index}"):
+                    st.success(f"You have purchased {quantity} tons of {row['Crop']} for ${quantity * row['Price ($)']}.")
 
     elif tab == "Profile Management":
         st.header("Profile Management")
